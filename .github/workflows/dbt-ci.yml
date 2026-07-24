@@ -1,0 +1,51 @@
+name: dbt CI - Gold
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'gold/**'
+  pull_request:
+    paths:
+      - 'gold/**'
+
+jobs:
+  dbt-build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gold
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dbt-databricks
+        run: pip install dbt-databricks
+
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml <<EOF
+          gold:
+            target: ci
+            outputs:
+              ci:
+                type: databricks
+                catalog: gharchive
+                schema: gold_dev
+                host: ${{ secrets.DATABRICKS_HOST }}
+                http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
+                token: ${{ secrets.DATABRICKS_TOKEN }}
+                threads: 4
+          EOF
+
+      - name: dbt deps
+        run: dbt deps
+
+      - name: dbt build
+        run: dbt build --profiles-dir ~/.dbt
