@@ -1,0 +1,50 @@
+version: 2
+
+models:
+  - name: pr_issue_activity
+    description: "Pull request and issue activity for each repository"
+    tests:                              # <-- MODEL-LEVEL tests go here
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - repo_id
+            - event_date
+    columns:
+      - name: repo_id
+        data_type: bigint
+        description: "Unique identifier for the repository"
+        data_tests:
+          - not_null
+
+      - name: repo_name
+        data_type: string
+        description: "Name of the repository"
+
+      - name: event_date
+        data_type: date
+        description: "Date of the event"
+        data_tests:
+          - not_null
+
+      - name: pr_events
+        data_type: bigint
+        description: "Count of pull request events"
+        data_tests:
+          - not_null
+
+      - name: prs_merged
+        data_type: bigint
+        description: "Count of merged pull requests"
+        data_tests:
+          - not_null
+
+      - name: issue_events
+        data_type: bigint
+        description: "Count of issue events"
+        data_tests:
+          - not_null
+
+      - name: comment_events
+        data_type: bigint
+        description: "Count of comment events"
+        data_tests:
+          - not_null

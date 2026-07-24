@@ -1,0 +1,22 @@
+version: 2
+
+models:
+  - name: top_repos_by_stars
+    description: "Top repositories by star events in the last 7 days"
+    columns:
+      - name: repo_id
+        data_type: bigint
+        description: " Unique identifier for the repository"
+        data_tests:
+          - not_null
+          - unique
+
+      - name: repo_name
+        data_type: string
+        description: "Name of the repository"
+
+      - name: total_star_events
+        data_type: bigint
+        description: "Total number of star events"
+        data_tests:
+          - not_null

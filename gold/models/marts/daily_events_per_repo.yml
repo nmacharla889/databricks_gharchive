@@ -1,0 +1,32 @@
+version: 2
+
+models:
+  - name: daily_events_per_repo
+    description: "Daily event counts for each repository"
+    tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns:
+            - repo_id
+            - event_date
+    columns:
+      - name: repo_id
+        data_type: bigint
+        description: "Unique identifier for the repository"
+        data_tests:
+          - not_null
+
+      - name: repo_name
+        data_type: string
+        description: "Name of the repository"
+
+      - name: event_date
+        data_type: date
+        description: "Date of the event"
+        data_tests:
+          - not_null
+
+      - name: event_count
+        data_type: bigint
+        description: "Count of events"
+        data_tests:
+          - not_null
