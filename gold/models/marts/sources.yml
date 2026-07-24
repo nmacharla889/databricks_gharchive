@@ -1,0 +1,137 @@
+version: 2
+
+sources:
+  - name: bronze_dev
+    tables:
+      - name: events
+        columns:
+          - name: event_id
+            data_type: string
+          - name: event_type
+            data_type: string
+          - name: actor_id
+            data_type: bigint
+          - name: actor_login
+            data_type: string
+          - name: repo_id
+            data_type: bigint
+          - name: repo_name
+            data_type: string
+          - name: payload
+            data_type: string
+          - name: created_at
+            data_type: string
+          - name: org_id
+            data_type: bigint
+          - name: org_login
+            data_type: string
+          - name: event_date
+            data_type: date
+  - name: silver_dev
+    tables:
+      - name: watch_events
+        columns:
+          - name: event_id
+            data_type: string
+          - name: actor_id
+            data_type: bigint
+          - name: actor_login
+            data_type: string
+          - name: repo_id
+            data_type: bigint
+          - name: repo_name
+            data_type: string
+          - name: org_id
+            data_type: bigint
+          - name: created_at
+            data_type: string
+          - name: event_date
+            data_type: date
+          - name: event_action
+            data_type: string
+
+      - name: pull_request_events
+        columns:
+          - name: actor_id
+            data_type: bigint
+          - name: actor_login
+            data_type: string
+          - name: repo_id
+            data_type: bigint
+          - name: repo_name
+            data_type: string
+          - name: org_id
+            data_type: bigint
+          - name: created_at
+            data_type: string
+          - name: event_date
+            data_type: date
+          - name: event_action
+            data_type: string
+          - name: pr_number
+            data_type: int
+          - name: pr_merged
+            data_type: boolean
+
+      - name: issues_events
+        columns:
+          - name: actor_id
+            data_type: bigint
+          - name: actor_login
+            data_type: string
+          - name: repo_id
+            data_type: bigint
+          - name: repo_name
+            data_type: string
+          - name: org_id
+            data_type: bigint
+          - name: created_at
+            data_type: string
+          - name: event_date
+            data_type: date
+          - name: event_action
+            data_type: string
+          - name: issue_number
+            data_type: int
+
+      - name: issue_comment_events
+        columns:
+          - name: actor_id
+            data_type: bigint
+          - name: actor_login
+            data_type: string
+          - name: repo_id
+            data_type: bigint
+          - name: repo_name
+            data_type: string
+          - name: org_id
+            data_type: bigint
+          - name: created_at
+            data_type: string
+          - name: event_date
+            data_type: date
+          - name: event_action
+            data_type: string
+          - name: issue_number
+            data_type: int
+
+      - name: push_events
+        columns:
+          - name: event_id
+            data_type: string
+          - name: actor_id
+            data_type: bigint
+          - name: actor_login
+            data_type: string
+          - name: repo_id
+            data_type: bigint
+          - name: repo_name
+            data_type: string
+          - name: org_id
+            data_type: bigint
+          - name: created_at
+            data_type: string
+          - name: event_date
+            data_type: date
+          - name: push_size
+            data_type: string
