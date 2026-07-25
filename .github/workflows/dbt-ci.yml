@@ -5,9 +5,11 @@ on:
     branches: [main]
     paths:
       - 'gold/**'
+      - '.github/workflows/dbt-ci.yml'
   pull_request:
     paths:
       - 'gold/**'
+      - '.github/workflows/dbt-ci.yml'
 
 jobs:
   dbt-build:
