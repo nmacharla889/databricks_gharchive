@@ -5,9 +5,11 @@ on:
     branches: [main]
     paths:
       - 'gold/**'
+      - '.github/workflows/dbt-ci.yml'
   pull_request:
     paths:
       - 'gold/**'
+      - '.github/workflows/dbt-ci.yml'
 
 jobs:
   dbt-build:
@@ -38,6 +40,48 @@ jobs:
                 type: databricks
                 catalog: gharchive
                 schema: gold_dev
+                host: ${{ secrets.DATABRICKS_HOST }}
+                http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
+                token: ${{ secrets.DATABRICKS_TOKEN }}
+                threads: 4
+          EOF
+
+      - name: dbt deps
+        run: dbt deps
+
+      - name: dbt build
+        run: dbt build --profiles-dir ~/.dbt
+
+  dbt-promote-prod:
+    needs: dbt-build
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gold
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dbt-databricks
+        run: pip install dbt-databricks
+
+      - name: Create profiles.yml
+        run: |
+          mkdir -p ~/.dbt
+          cat > ~/.dbt/profiles.yml <<EOF
+          gold:
+            target: prod
+            outputs:
+              prod:
+                type: databricks
+                catalog: gharchive
+                schema: gold_prod
                 host: ${{ secrets.DATABRICKS_HOST }}
                 http_path: ${{ secrets.DATABRICKS_HTTP_PATH }}
                 token: ${{ secrets.DATABRICKS_TOKEN }}
