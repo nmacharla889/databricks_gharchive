@@ -1,7 +1,8 @@
 version: 2
 
 sources:
-  - name: bronze_dev
+  - name: bronze
+    schema: "{{ 'bronze_prod' if target.name == 'prod' else 'bronze_dev' }}"
     tables:
       - name: events
         columns:
@@ -27,7 +28,9 @@ sources:
             data_type: string
           - name: event_date
             data_type: date
-  - name: silver_dev
+
+  - name: silver
+    schema: "{{ 'silver_prod' if target.name == 'prod' else 'silver_dev' }}"
     tables:
       - name: watch_events
         columns:

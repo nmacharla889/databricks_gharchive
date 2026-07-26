@@ -3,7 +3,7 @@ with watch_events as (
     select
         repo_id,
         repo_name
-    from {{ source('silver_dev', 'watch_events') }}
+    from {{ source('silver', 'watch_events') }}
 
 ),
 

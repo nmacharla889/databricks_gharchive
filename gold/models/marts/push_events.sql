@@ -5,7 +5,7 @@ with push_events as (
         repo_name,
         event_date,
         push_size
-    from {{ source('silver_dev', 'push_events') }}
+    from {{ source('silver', 'push_events') }}
 
 ),
 
