@@ -93,3 +93,6 @@ jobs:
 
       - name: dbt build
         run: dbt build --profiles-dir ~/.dbt
+
+      - name: Print resolved source schemas (verification)
+        run: grep -A1 "FROM \`gharchive\`" target/compiled/gold/models/marts/*.sql || cat target/compiled/gold/models/marts/*.sql
