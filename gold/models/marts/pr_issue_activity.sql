@@ -7,7 +7,7 @@ with pr_events as (
         repo_name,
         event_date,
         pr_merged
-    from {{ source('silver_dev', 'pull_request_events') }}
+    from {{ source('silver', 'pull_request_events') }}
 
 ),
 
@@ -17,7 +17,7 @@ issue_events as (
         repo_id,
         repo_name,
         event_date
-    from {{ source('silver_dev', 'issues_events') }}
+    from {{ source('silver', 'issues_events') }}
 
 ),
 
@@ -27,7 +27,7 @@ comment_events as (
         repo_id,
         repo_name,
         event_date
-    from {{ source('silver_dev', 'issue_comment_events') }}
+    from {{ source('silver', 'issue_comment_events') }}
 
 ),
 

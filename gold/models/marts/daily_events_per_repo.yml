@@ -5,9 +5,10 @@ models:
     description: "Daily event counts for each repository"
     tests:
       - dbt_utils.unique_combination_of_columns:
-          combination_of_columns:
-            - repo_id
-            - event_date
+          arguments:
+            combination_of_columns:
+              - repo_id
+              - event_date
     columns:
       - name: repo_id
         data_type: bigint

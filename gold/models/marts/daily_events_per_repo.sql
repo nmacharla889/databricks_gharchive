@@ -4,7 +4,7 @@ with bronze_events as (
         repo_id,
         repo_name,
         event_date
-    from {{ source('bronze_dev', 'events') }}
+    from {{ source('bronze', 'events') }}
 ),
 
 daily_counts as (
