@@ -60,4 +60,18 @@ Schema tests (21 total): `not_null` on all grain and metric columns across all 4
 
 Singular tests (2): `prs_merged ≤ pr_events` in `pr_issue_activity` — the only test that catches a logical impossibility, not just a data-quality nuisance. And a Silver-to-Gold reconciliation test on `push_events` — `sum(push_events)` in the mart must equal `count(*)` in `silver.push_events`. This test exists specifically because of the repo_id gap and the two silent-fail bugs above: it's the one check that would have caught a silent aggregation-boundary error before it reached Gold.
 
+## DEV / PROD PROMOTION
+
+**Model** — the same code runs twice, once per environment, each writing its own output. CI does not copy data from dev to prod.
+
+**Bronze/Silver** — one-time manual promotion. The dataset is static and closed; no new code changes are expected, so PR-triggered validation and auto-promotion would cost as much as a real run every time without buying anything. Ran once against `bronze_prod`/`silver_prod`, verified against known-good row counts, done.
+
+**Gold** — automated CI promotion (`.github/workflows/dbt-ci.yml`). Unlike Bronze/Silver, the dbt layer may still be iterated on, so `dbt build` — cheap to run repeatedly — validates every PR against `gold_dev`, and a gated second job (`dbt-promote-prod`, triggered only on push to `main`, `needs: dbt-build`) promotes to `gold_prod`.
+
+**Shared Volume note** — raw gzipped JSON lands in `/Volumes/gharchive/bronze_dev/landing_files/`, nested under `bronze_dev` for historical/naming reasons even though both dev and prod Bronze/Silver runs read from it. Not worth restructuring — the raw source bytes are identical regardless of destination.
+
+**Bug found and fixed during this build** — Gold's `sources.yml` originally hardcoded `bronze_dev`/`silver_dev` directly in every model's `source()` call, not just as a default. This meant `dbt-promote-prod` wrote output to `gold_prod` but still read input from `silver_dev` — the dev/prod split existed for Bronze and Silver but not for Gold. It didn't error: `gold_prod` counts matched `gold_dev` counts, which looked like confirmation but was actually proof the split wasn't real (same input, same output, different label). Fixed by making `sources.yml` resolve schema from `target.name` and switching every model to the logical source name (`source('silver', ...)` instead of `source('silver_dev', ...)`). This is the same silent-fail category as the three bugs above — nothing threw an error, a downstream number just happened to look right for the wrong reason.
+
+**Exposures** — deliberately omitted. No dashboard, notebook, or downstream job consumes these marts; this project ends at the Gold layer. Adding exposures.yml would document a consumer that doesn't exist.
+
 Final result: PASS=21, WARN=0, ERROR=0.
