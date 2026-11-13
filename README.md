@@ -68,7 +68,7 @@ Gold layer only — Bronze and Silver are one-time manual runs, not automated (s
 
 **`.github/workflows/dbt-ci.yml`** — two jobs:
 
-- **`dbt-build`** — runs on every push to `main` and every PR that touches `gold/**`. Builds and tests against `gold_dev`. This is the validation gate: nothing gets promoted unless this passes first.
+- **`dbt-build`** — runs on pushes to `main` and on PR's, but only when `gold/**` or the workflow file changes. Builds and tests against `gold_dev`. This is the validation gate: nothing gets promoted unless this passes first.
 - **`dbt-promote-prod`** — runs only on push to `main` (`if: github.event_name == 'push' && github.ref == 'refs/heads/main'`), gated behind `needs: dbt-build` so a broken dev build can't reach prod. Builds and tests the same code against `gold_prod`.
 
 **Same code, two environments** — CI does not copy data from dev to prod. The identical dbt project runs twice, once per target, each writing to its own schema. `gold_prod` is genuinely rebuilt from `silver_prod`/`bronze_prod`, not a copy of `gold_dev`'s output — see the sources.yml fix in docs/architecture.md for why that distinction mattered.
