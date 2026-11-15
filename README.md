@@ -13,13 +13,13 @@ Medallion-architecture pipeline on Databricks, ingesting 7 days of GH Archive ev
 ![DAG](docs/DAG_SCREENSHOT.png)
 
 
-**Bronze** (`gharchive.bronze_dev.events`) — raw events, all types mixed, payload kept as untouched string. Partitioned by `event_date`, idempotent via `replaceWhere`.
+**Bronze** (`gharchive.bronze_dev.events`) — raw events, all types mixed, payload kept as an untouched string. Partitioned by `event_date`, idempotent via `replaceWhere`.
 
 **Silver** (`gharchive.silver_dev`) — 5 tables, one per event type (PushEvent, PullRequestEvent, IssuesEvent, WatchEvent, IssueCommentEvent), payload flattened per type.
 
-**Gold** (`gold/` dbt project) — 4 marts: `top_repos_by_stars`, `daily_events_per_repo`, `pr_issue_activity`, `push_events`. See ARCHITECTURE.md for why each mart's grain and source differ.
+**Gold** (`gold/` dbt project) — 4 marts: `top_repos_by_stars`, `daily_events_per_repo`, `pr_issue_activity`, `push_events`. See docs/architecture.md for why each mart's grain and source differ.
 
-Full reasoning, decisions, and known data gaps: see [ARCHITECTURE.md](./ARCHITECTURE.md).
+Full reasoning, decisions, and known data gaps: see [docs/architecture.md](./docs/architecture.md).
 
 ## Data
 - Source: [gharchive.org](https://www.gharchive.org/), 168 hourly gzipped JSON files
@@ -41,7 +41,7 @@ Downloads 168 hourly gzipped JSON files (7 days × 24 hours) from gharchive.org 
 2020-06-10 will show 10 missing files (confirmed source outage, not a bug).
 
 ### 2. Build Bronze — `notebooks/02_bronze.py`
-Reads raw JSON as text (not `spark.read.json` — see ARCHITECTURE.md for why),
+Reads raw JSON as text (not `spark.read.json` — see docs/architecture.md for why),
 extracts 10 fields via `get_json_object`, casts types, derives `event_date`,
 and writes to `gharchive.bronze_dev.events`, partitioned and idempotent via
 `replaceWhere`. The final cell loops over all 7 dates to backfill the full table.
@@ -53,11 +53,13 @@ flattens each payload shape, writes to `gharchive.silver_dev`, partitioned
 and idempotent via `replaceWhere`.
 
 ### 4. Build Gold — `gold/` (dbt project)
+```bash
 cd gold/
 dbt run
 dbt test
 dbt docs generate
 dbt docs serve
+```
 
 ## Tests
 Gold layer: 21 dbt tests (schema + singular), PASS=21 ERROR=0.
@@ -68,7 +70,7 @@ Gold layer only — Bronze and Silver are one-time manual runs, not automated (s
 
 **`.github/workflows/dbt-ci.yml`** — two jobs:
 
-- **`dbt-build`** — runs on pushes to `main` and on PR's, but only when `gold/**` or the workflow file changes. Builds and tests against `gold_dev`. This is the validation gate: nothing gets promoted unless this passes first.
+- **`dbt-build`** — runs on pushes to `main` and on PRs, but only when `gold/**` or the workflow file changes. Builds and tests against `gold_dev`. This is the validation gate: nothing gets promoted unless this passes first.
 - **`dbt-promote-prod`** — runs only on push to `main` (`if: github.event_name == 'push' && github.ref == 'refs/heads/main'`), gated behind `needs: dbt-build` so a broken dev build can't reach prod. Builds and tests the same code against `gold_prod`.
 
 **Same code, two environments** — CI does not copy data from dev to prod. The identical dbt project runs twice, once per target, each writing to its own schema. `gold_prod` is genuinely rebuilt from `silver_prod`/`bronze_prod`, not a copy of `gold_dev`'s output — see the sources.yml fix in docs/architecture.md for why that distinction mattered.
